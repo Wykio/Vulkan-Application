@@ -21,6 +21,8 @@ void Application::mainLoop() {
 }
 
 void Application::cleanup() {
+    vkDestroyInstance(instance, nullptr);
+
     glfwDestroyWindow(window);
 
     glfwTerminate();
