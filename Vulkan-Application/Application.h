@@ -24,6 +24,7 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger;
     VkDevice device;
     VkQueue graphicsQueue;
+    VkSurfaceKHR surface;
 
     void initWindow();
     void initVulkan();
