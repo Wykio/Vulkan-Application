@@ -15,6 +15,9 @@ public:
         cleanup();
     }
 
+    // Debug tools
+    static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
 private:
     GLFWwindow* window;
     VkInstance instance;
@@ -24,7 +27,7 @@ private:
     void initVulkan();
     void mainLoop();
     void cleanup();
-
+        
     // Debug tools
     void setupDebugMessenger();
     void DestroyDebugMessenger();
