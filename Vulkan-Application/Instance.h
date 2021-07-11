@@ -19,6 +19,7 @@ class Instance
         static void createInstance(VkInstance* instance);
 
     private:
+        static std::vector<const char*> getRequiredExtensions();
         static void checkGLFWextensionSupport(const char** glfwExtensions, uint32_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
         static bool checkValidationLayerSupport();
 };

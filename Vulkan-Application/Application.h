@@ -18,9 +18,14 @@ public:
 private:
     GLFWwindow* window;
     VkInstance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
 
     void initWindow();
     void initVulkan();
     void mainLoop();
     void cleanup();
-};
+
+    // Debug tools
+    void setupDebugMessenger();
+    void DestroyDebugMessenger();
+}; 
