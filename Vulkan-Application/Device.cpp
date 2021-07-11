@@ -5,12 +5,12 @@
 #include <vector>
 
 
-void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue* graphicsQueue) {
+void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue* graphicsQueue, VkSurfaceKHR* surface) {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
-	pickPhysicalDevice(instance, &physicalDevice);
+	pickPhysicalDevice(instance, &physicalDevice, surface);
 
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 
 	VkDeviceQueueCreateInfo queueCreateInfo{};
 	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -47,7 +47,7 @@ void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue
 	vkGetDeviceQueue(*device, indices.graphicsFamily.value(), 0, graphicsQueue);
 }
 
-void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physicalDevice) {
+void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physicalDevice, VkSurfaceKHR* surface) {
 	// Count available devices
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(*instance, &deviceCount, nullptr);
@@ -60,7 +60,7 @@ void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physical
 	vkEnumeratePhysicalDevices(*instance, &deviceCount, devices.data());
 
 	for (const auto& device : devices) {
-		if (isDeviceSuitable(device)) {
+		if (isDeviceSuitable(device, surface)) {
 			*physicalDevice = device;
 			break;
 		}
@@ -71,13 +71,13 @@ void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physical
 	}
 }
 
-bool Device::isDeviceSuitable(VkPhysicalDevice physicalDevice) {
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+bool Device::isDeviceSuitable(VkPhysicalDevice physicalDevice, VkSurfaceKHR* surface) {
+	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 
 	return indices.isComplete();
 }
 
-QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR* surface) {
 	QueueFamilyIndices indices;
 	// Logic to find queue family indices to populate struct with
 
@@ -90,8 +90,14 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice) {
 	// Check if there is a VK_QUEUE_GRAPHICS_BIT queue is the device
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
+		// 
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			indices.graphicsFamily = i;
+		}
+		VkBool32 presentSupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, *surface, &presentSupport);
+		if (presentSupport) {
+			indices.presentFamily = i;
 		}
 		if (indices.isComplete()) {
 			break;
