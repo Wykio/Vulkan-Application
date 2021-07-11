@@ -1,5 +1,7 @@
 #include "Application.h"
 #include "Instance.h"
+#include "Device.h"
+
 #include <iostream>
 
 void Application::initWindow() {
@@ -13,7 +15,9 @@ void Application::initWindow() {
 
 void Application::initVulkan() {
     Instance::createInstance(&instance);
-    setupDebugMessenger();
+    setupDebugMessenger(); // need to put this in a class
+    //Device::pickPhysicalDevice(&instance);
+    Device::createLogicalDevice(&instance, &device, &graphicsQueue);
 }
 
 void Application::mainLoop() {
@@ -23,6 +27,8 @@ void Application::mainLoop() {
 }
 
 void Application::cleanup() {
+    vkDestroyDevice(device, nullptr);
+
     DestroyDebugMessenger();
 
     vkDestroyInstance(instance, nullptr);
@@ -45,7 +51,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    // Only display warning and critical message
+    if(messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT && messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }

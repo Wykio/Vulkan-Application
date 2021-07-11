@@ -22,6 +22,8 @@ private:
     GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
+    VkDevice device;
+    VkQueue graphicsQueue;
 
     void initWindow();
     void initVulkan();

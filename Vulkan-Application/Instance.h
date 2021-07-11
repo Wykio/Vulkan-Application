@@ -15,11 +15,11 @@ const bool enableValidationLayers = true;
 
 class Instance
 {
-    public:
-        static void createInstance(VkInstance* instance);
+public:
+    static void createInstance(VkInstance* instance);
 
-    private:
-        static std::vector<const char*> getRequiredExtensions();
-        static void checkGLFWextensionSupport(const char** glfwExtensions, uint32_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
-        static bool checkValidationLayerSupport();
+private:
+    static std::vector<const char*> getRequiredExtensions();
+    static void checkGLFWextensionSupport(const char** glfwExtensions, uint32_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
+    static bool checkValidationLayerSupport();
 };
