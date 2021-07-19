@@ -19,7 +19,7 @@ void Application::initVulkan() {
     setupDebugMessenger(); // need to put this in a class
     Presentation::createSurface(&instance, window, &surface);
     //Device::pickPhysicalDevice(&instance);
-    Device::createLogicalDevice(&instance, &device, &graphicsQueue, &surface);
+    Device::createLogicalDevice(&instance, &device, &graphicsQueue, &surface, &presentQueue);
 }
 
 void Application::mainLoop() {

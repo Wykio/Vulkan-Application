@@ -25,6 +25,7 @@ private:
     VkDevice device;
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
+    VkQueue presentQueue;
 
     void initWindow();
     void initVulkan();

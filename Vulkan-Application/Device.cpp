@@ -2,32 +2,49 @@
 #include "Instance.h"
 
 #include <stdexcept>
-#include <vector>
+#include <set>
 
 
-void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue* graphicsQueue, VkSurfaceKHR* surface) {
+void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue* graphicsQueue, VkSurfaceKHR* surface, VkQueue* presentQueue) {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
 	pickPhysicalDevice(instance, &physicalDevice, surface);
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
+	
+	// Simplify the Queue creation
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	// SET -> If the queue families are the same, then we only need to pass its index once.
+	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
-	VkDeviceQueueCreateInfo queueCreateInfo{};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-	queueCreateInfo.queueCount = 1;
+	// Create Queues for each family type
 	float queuePriority = 1.0f;
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+	for (uint32_t queueFamily : uniqueQueueFamilies) {
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
+
+	//VkDeviceQueueCreateInfo queueCreateInfo{};
+	//queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	//queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+	//queueCreateInfo.queueCount = 1;
+
+	//queueCreateInfo.pQueuePriorities = &queuePriority;	
 
 	VkPhysicalDeviceFeatures deviceFeatures{}; // if we need features by default -> VK_FALSE
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos = &queueCreateInfo;
-	createInfo.queueCreateInfoCount = 1;
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = 0;
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 	// Previous implementations of Vulkan made a distinction between instance and device specific validation layers, but this is no longer the case. That means that the enabledLayerCount and ppEnabledLayerNames fields of VkDeviceCreateInfo are ignored by up-to-date implementations. However, it is still a good idea to set them anyway to be compatible with older implementations:
 
@@ -45,6 +62,7 @@ void Device::createLogicalDevice(VkInstance* instance, VkDevice* device, VkQueue
 
 	// If the logical device is created we can retrieve queue handles
 	vkGetDeviceQueue(*device, indices.graphicsFamily.value(), 0, graphicsQueue);
+	vkGetDeviceQueue(*device, indices.presentFamily.value(), 0, presentQueue);
 }
 
 void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physicalDevice, VkSurfaceKHR* surface) {
@@ -74,7 +92,9 @@ void Device::pickPhysicalDevice(VkInstance* instance, VkPhysicalDevice* physical
 bool Device::isDeviceSuitable(VkPhysicalDevice physicalDevice, VkSurfaceKHR* surface) {
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 
-	return indices.isComplete();
+	bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
+
+	return indices.isComplete() && extensionsSupported;
 }
 
 QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR* surface) {
@@ -106,4 +126,20 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice, Vk
 	}
 
 	return indices;
+}
+
+bool Device::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+	uint32_t extensionCount;
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	for (const auto& extension : availableExtensions) {
+		requiredExtensions.erase(extension.extensionName);
+	}
+
+	return requiredExtensions.empty();
 }
