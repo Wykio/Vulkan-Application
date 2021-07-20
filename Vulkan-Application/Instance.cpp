@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Instance.h"
+#include "ValidationLayer.h"
 
 #include <GLFW/glfw3.h>
 #include <stdexcept>
@@ -59,7 +60,7 @@ void Instance::createInstance(VkInstance* instance) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        Application::populateDebugMessengerCreateInfo(debugCreateInfo);
+        ValidationLayer::populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     }
     else {
