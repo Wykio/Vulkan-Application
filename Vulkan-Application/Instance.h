@@ -20,6 +20,7 @@ public:
 
 private:
     static std::vector<const char*> getRequiredExtensions();
-    static void checkGLFWextensionSupport(const char** glfwExtensions, uint32_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
+    static VkResult checkRequiredExtensionsSupport();
+    static VkResult checkExtensionSupport(const char** glfwExtensions, size_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
     static bool checkValidationLayerSupport();
 };
