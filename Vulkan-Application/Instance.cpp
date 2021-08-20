@@ -26,10 +26,12 @@ void Instance::createInstance(VkInstance* instance) {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
+    // Check if required instance extensions are supported
     if (checkRequiredExtensionsSupport() != VK_SUCCESS) {
         throw std::runtime_error("Some instance extensions are not supported!");
     }
 
+    // Get required extensions and pass them to the createInfo
     std::vector<const char*> extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -41,7 +43,7 @@ void Instance::createInstance(VkInstance* instance) {
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
         ValidationLayer::populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        createInfo.pNext = static_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&debugCreateInfo);
     }
     else {
         createInfo.enabledLayerCount = 0;
@@ -109,6 +111,7 @@ VkResult Instance::checkExtensionSupport(const char** extensionsToCheck, size_t 
     return VK_SUCCESS;
 }
 
+// Check if Validation layers are supported
 bool Instance::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);

@@ -21,6 +21,6 @@ public:
 private:
     static std::vector<const char*> getRequiredExtensions();
     static VkResult checkRequiredExtensionsSupport();
-    static VkResult checkExtensionSupport(const char** glfwExtensions, size_t glfwExtensionCount, std::vector<VkExtensionProperties> extensions);
+    static VkResult checkExtensionSupport(const char** extensionsToCheck, size_t extensionsToCheckCount, std::vector<VkExtensionProperties> availableExtensions);
     static bool checkValidationLayerSupport();
 };
